@@ -1,10 +1,16 @@
 # This is a Shiny web application. You can run the application by clicking
 # the 'Run App' button above.
 #
+
+list.of.packages <- c("ggplot2", "Seurat","shinythemes","shiny")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+require(Seurat)
 require(shinythemes)
 require(shiny)
-require(shinyFiles)
 require(ggplot2)
+
 
 # app  UI -----------------------------------------------------------------
 ui <- fluidPage( theme = shinytheme("cosmo") , 
