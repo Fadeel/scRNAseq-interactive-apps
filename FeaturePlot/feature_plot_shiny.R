@@ -102,7 +102,7 @@ server <- function(input, output,session) {
   #src="seurat.rds"
   write(sprintf("Loading %s", src), stderr())
   seurat_object <- readRDS(src)
-  write(sprintf("Done", src), stderr())
+  write(sprintf("Done"), stderr())
   updateSelectizeInput(session, 'assay', choices = Assays(seurat_object), selected="RNA", server = TRUE)
   updateSelectizeInput(session, 'reduction', choices = Reductions(seurat_object), selected="umap", server = TRUE)
 
