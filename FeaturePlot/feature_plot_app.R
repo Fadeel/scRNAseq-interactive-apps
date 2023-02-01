@@ -66,7 +66,9 @@ ui <- fluidPage( theme = shinytheme("cosmo") ,
 
 
 server <- function(input, output,session) {
-  seurat_object <- readRDS("seurat.rds")
+  src="seurat.rds"
+  write(sprintf("Reading %s", src), stderr())
+  seurat_object <- readRDS(src)
   updateSelectizeInput(session, 'assay', choices = Assays(seurat_object), server = TRUE)
   updateSelectizeInput(session, 'reduction', choices = Reductions(seurat_object), server = TRUE)
   
@@ -116,6 +118,8 @@ server <- function(input, output,session) {
 
 
 # Run the application 
+write("Starting shiny app", stderr())
+
 shinyApp(ui = ui, server = server)
 
 
