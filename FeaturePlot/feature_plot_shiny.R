@@ -33,14 +33,22 @@ list.of.packages <- c("ggplot2", "Seurat","shinythemes","shiny")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 require(shiny)
-
-
-
-
 require(Seurat)
 require(shinythemes)
-require(shiny)
 require(ggplot2)
+
+## Load seurat object
+write(sprintf("Loading %s", src), stderr())
+seurat_object <- readRDS(src)
+write(sprintf("Done"), stderr())
+
+## Default parameters
+assayList = Assays(seurat_object)
+defaultAssay="RNA"
+reductionList = Reductions(seurat_object)
+defaultReduction="umap"
+gene.all = rownames(seurat_object@assays$RNA)
+gene.default = intersect(c("GAPDH", "Gapdh", "ACTB", "Actb"), gene.all)
 
 
 # app  UI -----------------------------------------------------------------
@@ -51,19 +59,22 @@ ui <- fluidPage( theme = shinytheme("cosmo") ,
                    sidebarPanel(
                      selectizeInput("gene",
                                  "Select gene symbols:",
-                                 choices = NULL,
+                                 choices = gene.all,
+                                 selected = gene.default,
                                  multiple = T
                      ),
                      
                      selectizeInput("assay",
                                     "Select assay (e.g. RNA,integrated,...):",
-                                    choices = NULL,
+                                    choices = assayList,
+                                    selected = defaultAssay,
                                     multiple = F
                      ),
                      
                      selectizeInput("reduction",
                                     "Select dimesion reduction (e.g. UMAP,PCA)",
-                                    choices = NULL,
+                                    choices = reductionList,
+                                    selected = defaultReduction,
                                     multiple = F
                      ),
                      
@@ -100,11 +111,8 @@ ui <- fluidPage( theme = shinytheme("cosmo") ,
 
 server <- function(input, output,session) {
   #src="seurat.rds"
-  write(sprintf("Loading %s", src), stderr())
-  seurat_object <- readRDS(src)
-  write(sprintf("Done"), stderr())
-  updateSelectizeInput(session, 'assay', choices = Assays(seurat_object), selected="RNA", server = TRUE)
-  updateSelectizeInput(session, 'reduction', choices = Reductions(seurat_object), selected="umap", server = TRUE)
+#  updateSelectizeInput(session, 'assay', choices = Assays(seurat_object), selected="RNA", server = TRUE)
+#  updateSelectizeInput(session, 'reduction', choices = Reductions(seurat_object), selected="umap", server = TRUE)
 
 ## Currently, default gene symbol upon start up the app is not working.
 #  updateSelectizeInput(session, 'gene', choices = rownames(seurat_object@assays$RNA), selected = intersect(c("Gapdh","GAPDH"), rownames(seurat_object@assays$RNA)), server = TRUE)
@@ -118,16 +126,16 @@ server <- function(input, output,session) {
 #  )
   
 ## What's the order of this observeEvent and the following plot <- eventReactive?
-  observeEvent(input$assay,
-    {
-      gene.current = input$gene
-      #gene.all = features()
-      gene.all = rownames(seurat_object@assays[[input$assay]])
-      gene.selected = intersect(gene.current, gene.all)
-      #updateSelectizeInput(session, 'gene', choices = features(), server = TRUE)
-      updateSelectizeInput(session, 'gene', choices = gene.all, selected = gene.selected, server = TRUE)
-    }
-  )
+  # observeEvent(input$assay,
+  #   {
+  #     gene.current = input$gene
+  #     #gene.all = features()
+  #     gene.all = rownames(seurat_object@assays[[input$assay]])
+  #     gene.selected = intersect(gene.current, gene.all)
+  #     #updateSelectizeInput(session, 'gene', choices = features(), server = TRUE)
+  #     updateSelectizeInput(session, 'gene', choices = gene.all, selected = gene.selected, server = TRUE)
+  #   }
+  # )
   
   plot <- eventReactive({
     input$assay
@@ -142,7 +150,10 @@ server <- function(input, output,session) {
   }  , { 
     DefaultAssay(seurat_object) = input$assay
 
-    if(length(input$gene)>0) FeaturePlot(seurat_object ,features = input$gene, 
+    gene.all = rownames(seurat_object@assays[[input$assay]])
+    gene.selected = intersect(input$gene, gene.all)
+    if(length(input$gene)>0) FeaturePlot(seurat_object,
+                features = gene.selected, 
                 cols = c(input$min.col, input$max.col),
                 max.cutoff =paste0("q", input$max.cutoff),
                 reduction = input$reduction,
