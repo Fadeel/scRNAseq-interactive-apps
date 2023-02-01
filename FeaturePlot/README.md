@@ -14,9 +14,3 @@ This R Shiny application can be used to plot and download the expression of a fe
 - Then, enter gene symbol(s) to draw feature plots.
 - Adjust asthetic paramters such as pt.size, min/max colors.
 - Download the plot
-
-
-
-
-## Milestone
-2023/02/01: converted into command line script that takes seurat object defined by user
