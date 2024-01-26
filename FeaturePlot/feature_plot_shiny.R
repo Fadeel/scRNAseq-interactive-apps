@@ -82,6 +82,13 @@ ui <- fluidPage( theme = shinytheme("cosmo") ,
                                   value = 95 , min = 0 , max = 100, step = 1 ),
                      numericInput("min.cutoff" , "Set min expression value (in terms of percentile)" , 
                                   value = 5 , min = 0 , max = 100, step = 1 ),
+                     selectizeInput("order",
+                                    "plot cells in order of expression?",
+                                    choices = c("TRUE", "FALSE"),
+                                    selected = "FALSE",
+                                    multiple = F
+                     ),
+                     
                      numericInput("pt.size" , "Point size" , 
                                   value =  0.5 , min = 0 ,max = 2 , step = 0.1) ,
                      textInput("min.col" , "Color for minimum value", value = "lightgrey") ,
@@ -147,6 +154,7 @@ server <- function(input, output,session) {
     input$ncols
     input$max.cutoff
     input$min.cutoff
+    input$order
   }  , { 
     DefaultAssay(seurat_object) = input$assay
 
@@ -157,6 +165,7 @@ server <- function(input, output,session) {
                 cols = c(input$min.col, input$max.col),
                 max.cutoff =paste0("q", input$max.cutoff),
                 reduction = input$reduction,
+                order =  as.logical(input$order),
                 min.cutoff = paste0("q",input$min.cutoff),
                 pt.size = input$pt.size,
                 ncol = input$ncols )
